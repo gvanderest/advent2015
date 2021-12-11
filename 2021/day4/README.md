@@ -13,3 +13,4 @@ Fortunately, because of the way I approached the first part, implementing this w
 -   I do not yet understand the borrow checker very well, but it does a good job of complaining.
 -   Learned a little more about HashSet and HashMap
 -   Wrote my first structs for the Board and BoardSlot to track some values
+-   Borrowing with properties inside of structs is complicated. Just when you think you slightly understand the borrow-checker, it slams you in the face.
