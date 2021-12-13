@@ -23,4 +23,5 @@ I got a little stuck here because of needing to figure out how to move up/down u
 
 -   I am not great at cartesian math in my head.
 -   I did a lot more functional programming this time, and it was super confusing initially until I got the `rust-analyzer` plugin in VS Code working with type annotations for arguments/outputs of calls.
--   Not crazy, but my brain got stuck on a w concepts.
+-   Not crazy, but my brain got stuck on a few concepts.
+-   I am purposefully not trying to optimize my previous code to support parts 1 and 2-- which could have probably been achieved with a simple "process_diagonals" flag, but it still makes my brain a little sad each time I don't. :-P
