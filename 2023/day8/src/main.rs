@@ -8,7 +8,7 @@ fn main() {
     println!("Part 2: {}", part2_solve(&input));
 }
 
-fn parse_input(input: &str) -> (Vec<char>, HashMap<String, (String, String)>) {
+fn parse_input(input: &str) -> (Vec<char>, HashMap<&str, (&str, &str)>) {
     let mut lines = input.trim().split('\n');
     let directions = lines.next().unwrap().to_string().chars().collect();
 
@@ -16,16 +16,15 @@ fn parse_input(input: &str) -> (Vec<char>, HashMap<String, (String, String)>) {
     lines.next().unwrap();
 
     let re = Regex::new(r"(\w+) = \((\w+), (\w+)\)").unwrap();
-    let mut islands: HashMap<String, (String, String)> = HashMap::new();
+    let mut islands = HashMap::new();
 
     for line in lines {
         // Parse island name vs left/right
         // Format: "AAA = (BBB, CCC)"
         let caps = re.captures(line).unwrap();
-        // TODO: Can we use a tuple deconstruction here?
-        let name = caps.get(1).unwrap().as_str().to_string();
-        let left = caps.get(2).unwrap().as_str().to_string();
-        let right = caps.get(3).unwrap().as_str().to_string();
+        let name = caps.get(1).unwrap().as_str();
+        let left = caps.get(2).unwrap().as_str();
+        let right = caps.get(3).unwrap().as_str();
 
         islands.insert(name, (left, right));
     }
@@ -34,7 +33,7 @@ fn parse_input(input: &str) -> (Vec<char>, HashMap<String, (String, String)>) {
 }
 
 fn part1_solve(input: &str) -> u64 {
-    let (directions, islands) = parse_input(&input);
+    let (directions, islands) = parse_input(input);
 
     println!("{:?}", islands);
 
@@ -43,8 +42,8 @@ fn part1_solve(input: &str) -> u64 {
     for direction in directions.iter().cycle() {
         steps += 1;
         let next_island_name = match direction {
-            'L' => current_island.0.clone(),
-            _ => current_island.1.clone(),
+            'L' => current_island.0,
+            _ => current_island.1,
         };
         if next_island_name == "ZZZ" {
             break;
@@ -55,47 +54,42 @@ fn part1_solve(input: &str) -> u64 {
 }
 
 fn part2_solve(input: &str) -> u64 {
-    let (directions, islands) = parse_input(&input);
+    let (directions, islands) = parse_input(input);
 
     println!("{:?}", islands);
 
     let mut steps = 0;
-    let mut current_islands: Vec<String> = islands
+    let mut current_islands: Vec<&str> = islands
         .keys()
         .filter(|k| k.ends_with('A'))
-        .map(|k| k.clone())
+        .cloned()
         .collect();
     println!("STARTING ISLANDS: {:?}", current_islands);
     for direction in directions.iter().cycle() {
         steps += 1;
-        let mut next_islands: Vec<String> = Vec::new();
-        for current_island_key in &current_islands {
-            let current_island = islands.get(current_island_key).unwrap();
 
-            let next_island_name = match direction {
-                'L' => current_island.0.clone(),
-                _ => current_island.1.clone(),
-            };
-
-            next_islands.push(next_island_name);
-        }
-
-        let non_ending_islands = next_islands
+        // All step to next island
+        current_islands = current_islands
             .iter()
-            .filter(|k| !k.ends_with('Z'))
-            .collect::<Vec<&String>>();
-        let non_ending_island_count = non_ending_islands.len();
-        // println!(
-        //     "Ghosts on non-Z islands: {} .. {:?}",
-        //     non_ending_island_count, non_ending_islands
-        // );
+            .map(|current_island_key| {
+                let current_island = islands.get(current_island_key).unwrap();
 
-        if non_ending_island_count == 0 {
+                match direction {
+                    'L' => current_island.0,
+                    _ => current_island.1,
+                }
+            })
+            .collect();
+
+        // Check if we're done
+        let all_ending_islands = current_islands
+            .iter()
+            .all(|island_name| island_name.ends_with('Z'));
+        if all_ending_islands {
             break;
         }
-        current_islands = next_islands;
 
-        if steps % 1_000_000 == 0 {
+        if steps % 10_000_000 == 0 {
             println!("{}..", steps);
         }
         // println!("NEXT ISLANDS: {:?}", current_islands);
