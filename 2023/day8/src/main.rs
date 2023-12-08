@@ -5,7 +5,7 @@ use regex::Regex;
 fn main() {
     let input = fs::read_to_string("input.txt").unwrap();
     println!("Part 1: {}", part1_solve(&input));
-    // println!("Part 2: {}", part2_solve(&input));
+    println!("Part 2: {}", part2_solve(&input));
 }
 
 fn parse_input(input: &str) -> (Vec<char>, HashMap<String, (String, String)>) {
@@ -54,6 +54,55 @@ fn part1_solve(input: &str) -> u64 {
     steps
 }
 
+fn part2_solve(input: &str) -> u64 {
+    let (directions, islands) = parse_input(&input);
+
+    println!("{:?}", islands);
+
+    let mut steps = 0;
+    let mut current_islands: Vec<String> = islands
+        .keys()
+        .filter(|k| k.ends_with('A'))
+        .map(|k| k.clone())
+        .collect();
+    println!("STARTING ISLANDS: {:?}", current_islands);
+    for direction in directions.iter().cycle() {
+        steps += 1;
+        let mut next_islands: Vec<String> = Vec::new();
+        for current_island_key in &current_islands {
+            let current_island = islands.get(current_island_key).unwrap();
+
+            let next_island_name = match direction {
+                'L' => current_island.0.clone(),
+                _ => current_island.1.clone(),
+            };
+
+            next_islands.push(next_island_name);
+        }
+
+        let non_ending_islands = next_islands
+            .iter()
+            .filter(|k| !k.ends_with('Z'))
+            .collect::<Vec<&String>>();
+        let non_ending_island_count = non_ending_islands.len();
+        // println!(
+        //     "Ghosts on non-Z islands: {} .. {:?}",
+        //     non_ending_island_count, non_ending_islands
+        // );
+
+        if non_ending_island_count == 0 {
+            break;
+        }
+        current_islands = next_islands;
+
+        if steps % 1_000_000 == 0 {
+            println!("{}..", steps);
+        }
+        // println!("NEXT ISLANDS: {:?}", current_islands);
+    }
+    steps
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -66,5 +115,10 @@ mod tests {
 
         let example2 = fs::read_to_string("example2.txt").unwrap();
         assert_eq!(6, part1_solve(&example2));
+    }
+    #[test]
+    fn part2_examples() {
+        let example1 = fs::read_to_string("example3.txt").unwrap();
+        assert_eq!(6, part2_solve(&example1));
     }
 }
