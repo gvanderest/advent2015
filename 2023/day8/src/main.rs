@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fs};
 
+use num::{integer::lcm, FromPrimitive, Integer};
 use regex::Regex;
 
 fn main() {
@@ -58,41 +59,41 @@ fn part2_solve(input: &str) -> u64 {
 
     println!("{:?}", islands);
 
-    let mut steps = 0;
-    let mut current_islands: Vec<&str> = islands
+    let starting_islands: Vec<&str> = islands
         .keys()
         .filter(|k| k.ends_with('A'))
         .cloned()
         .collect();
-    println!("STARTING ISLANDS: {:?}", current_islands);
-    for direction in directions.iter().cycle() {
-        steps += 1;
 
-        // All step to next island
-        current_islands = current_islands
-            .iter()
-            .map(|current_island_key| {
-                let current_island = islands.get(current_island_key).unwrap();
-
-                match direction {
+    let answers_for_islands: Vec<u64> = starting_islands
+        .iter()
+        .map(|starting_island_name| {
+            let mut steps = 0;
+            let mut current_island = islands.get(starting_island_name).unwrap();
+            for direction in directions.iter().cycle() {
+                steps += 1;
+                let next_island_name = match direction {
                     'L' => current_island.0,
                     _ => current_island.1,
+                };
+                if next_island_name.ends_with('Z') {
+                    println!(
+                        "Ending island found.. {} with {} steps",
+                        next_island_name, steps
+                    );
+                    break;
                 }
-            })
-            .collect();
+                current_island = islands.get(&next_island_name).unwrap();
+            }
+            steps
+        })
+        .collect();
 
-        // Check if we're done
-        let all_ending_islands = current_islands
-            .iter()
-            .all(|island_name| island_name.ends_with('Z'));
-        if all_ending_islands {
-            break;
-        }
-
-        if steps % 10_000_000 == 0 {
-            println!("{}..", steps);
-        }
-        // println!("NEXT ISLANDS: {:?}", current_islands);
+    let mut steps = *answers_for_islands.first().unwrap();
+    for x in 1..answers_for_islands.len() {
+        // I had the idea of using a lowest common multiple, but wasn't sure about it--
+        // then I peeked at someone else's answer after mine took too long and realized I was on the right track
+        steps = lcm(steps, *answers_for_islands.get(x).unwrap());
     }
     steps
 }
